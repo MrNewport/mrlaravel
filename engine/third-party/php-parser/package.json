@@ -1,0 +1,6 @@
+{
+  "name": "php-parser",
+  "version": "3.7.0",
+  "main": "src/index.js",
+  "license": "BSD-3-Clause"
+}

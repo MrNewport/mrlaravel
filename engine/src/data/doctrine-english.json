@@ -1,0 +1,412 @@
+{
+    "source": "doctrine/inflector 2.1.0, MIT",
+    "uninflected": [
+        ".*ss",
+        "clothes",
+        "data",
+        "fascia",
+        "fuchsia",
+        "galleria",
+        "mafia",
+        "militia",
+        "pants",
+        "petunia",
+        "sepia",
+        "trivia",
+        "utopia",
+        "butter",
+        "cantus",
+        "carp",
+        "cattle",
+        "chassis",
+        "clippers",
+        "clothing",
+        "coal",
+        "cod",
+        "coitus",
+        "compensation",
+        "congoese",
+        "contretemps",
+        "coreopsis",
+        "corps",
+        "cotton",
+        "data",
+        "debris",
+        "deer",
+        "diabetes",
+        "djinn",
+        "education",
+        "eland",
+        "elk",
+        "emoji",
+        "equipment",
+        "evidence",
+        "faroese",
+        "feedback",
+        "fish",
+        "flounder",
+        "flour",
+        "foochowese",
+        "food",
+        "furniture",
+        "gallows",
+        "genevese",
+        "genoese",
+        "gilbertese",
+        "gold",
+        "headquarters",
+        "herpes",
+        "hijinks",
+        "homework",
+        "hottentotese",
+        "impatience",
+        "information",
+        "innings",
+        "jackanapes",
+        "jeans",
+        "jedi",
+        "kin",
+        "kiplingese",
+        "knowledge",
+        "kongoese",
+        "leather",
+        "love",
+        "lucchese",
+        "luggage",
+        "mackerel",
+        "Maltese",
+        "management",
+        "metadata",
+        "mews",
+        "money",
+        "moose",
+        "mumps",
+        "music",
+        "nankingese",
+        "news",
+        "nexus",
+        "niasese",
+        "nutrition",
+        "offspring",
+        "oil",
+        "patience",
+        "pekingese",
+        "piedmontese",
+        "pincers",
+        "pistoiese",
+        "plankton",
+        "pliers",
+        "pokemon",
+        "police",
+        "polish",
+        "portuguese",
+        "proceedings",
+        "progress",
+        "rabies",
+        "rain",
+        "research",
+        "rhinoceros",
+        "rice",
+        "salmon",
+        "sand",
+        "sarawakese",
+        "scissors",
+        "sea[- ]bass",
+        "series",
+        "shavese",
+        "shears",
+        "sheep",
+        "siemens",
+        "silk",
+        "sms",
+        "soap",
+        "social media",
+        "spam",
+        "species",
+        "staff",
+        "sugar",
+        "swine",
+        "talent",
+        "toothpaste",
+        "traffic",
+        "travel",
+        "trousers",
+        "trout",
+        "tuna",
+        "us",
+        "vermontese",
+        "vinegar",
+        "weather",
+        "wenchowese",
+        "wheat",
+        "whiting",
+        "wildebeest",
+        "wood",
+        "wool",
+        "yengeese"
+    ],
+    "irregular": {
+        "abuses": "abuse",
+        "algae": "alga",
+        "atlases": "atlas",
+        "avalanches": "avalanche",
+        "axes": "axe",
+        "beefs": "beef",
+        "blouses": "blouse",
+        "brothers": "brother",
+        "brownies": "brownie",
+        "caches": "cache",
+        "cafes": "cafe",
+        "canvases": "canvas",
+        "caves": "cave",
+        "chateaux": "chateau",
+        "children": "child",
+        "cookies": "cookie",
+        "corpuses": "corpus",
+        "cows": "cow",
+        "criteria": "criterion",
+        "curricula": "curriculum",
+        "curves": "curve",
+        "demos": "demo",
+        "dice": "die",
+        "dominoes": "domino",
+        "echoes": "echo",
+        "emphases": "emphasis",
+        "epochs": "epoch",
+        "foes": "foe",
+        "feet": "foot",
+        "fungi": "fungus",
+        "ganglions": "ganglion",
+        "gases": "gas",
+        "genies": "genie",
+        "genera": "genus",
+        "geese": "goose",
+        "graffiti": "graffito",
+        "graves": "grave",
+        "hippopotami": "hippopotamus",
+        "hoaxes": "hoax",
+        "hoofs": "hoof",
+        "humans": "human",
+        "irises": "iris",
+        "larvae": "larva",
+        "leaves": "leaf",
+        "lenses": "lens",
+        "loaves": "loaf",
+        "men": "man",
+        "media": "medium",
+        "memoranda": "memorandum",
+        "monies": "money",
+        "mongooses": "mongoose",
+        "mottoes": "motto",
+        "moves": "move",
+        "mythoi": "mythos",
+        "neuroses": "neurosis",
+        "niches": "niche",
+        "niveaux": "niveau",
+        "nuclei": "nucleus",
+        "numina": "numen",
+        "nurseries": "nursery",
+        "oases": "oasis",
+        "occiputs": "occiput",
+        "octopuses": "octopus",
+        "opuses": "opus",
+        "oxen": "ox",
+        "passersby": "passerby",
+        "penises": "penis",
+        "people": "person",
+        "plateaux": "plateau",
+        "runners-up": "runner-up",
+        "safes": "safe",
+        "saves": "save",
+        "sexes": "sex",
+        "sieves": "sieve",
+        "soliloquies": "soliloquy",
+        "sons-in-law": "son-in-law",
+        "stadiums": "stadium",
+        "syllabi": "syllabus",
+        "testes": "testis",
+        "thieves": "thief",
+        "teeth": "tooth",
+        "tornadoes": "tornado",
+        "trilbys": "trilby",
+        "turfs": "turf",
+        "valves": "valve",
+        "volcanoes": "volcano",
+        "waves": "wave",
+        "zombies": "zombie"
+    },
+    "rules": [
+        [
+            "(s)tatuses$",
+            "\\1\\2tatus"
+        ],
+        [
+            "(s)tatus$",
+            "\\1\\2tatus"
+        ],
+        [
+            "(c)ampus$",
+            "\\1\\2ampus"
+        ],
+        [
+            "^(.*)(menu)s$",
+            "\\1\\2"
+        ],
+        [
+            "(quiz)zes$",
+            "\\1"
+        ],
+        [
+            "(matr)ices$",
+            "\\1ix"
+        ],
+        [
+            "(vert|ind)ices$",
+            "\\1ex"
+        ],
+        [
+            "^(ox)en",
+            "\\1"
+        ],
+        [
+            "(alias)(es)*$",
+            "\\1"
+        ],
+        [
+            "(buffal|her|potat|tomat|volcan)oes$",
+            "\\1o"
+        ],
+        [
+            "(alumn|bacill|cact|foc|fung|nucle|radi|stimul|syllab|termin|viri?)i$",
+            "\\1us"
+        ],
+        [
+            "([ftw]ax)es",
+            "\\1"
+        ],
+        [
+            "(analys|ax|cris|test|thes)es$",
+            "\\1is"
+        ],
+        [
+            "(shoe|slave)s$",
+            "\\1"
+        ],
+        [
+            "(o)es$",
+            "\\1"
+        ],
+        [
+            "ouses$",
+            "ouse"
+        ],
+        [
+            "([^a])uses$",
+            "\\1us"
+        ],
+        [
+            "([m|l])ice$",
+            "\\1ouse"
+        ],
+        [
+            "(x|ch|ss|sh)es$",
+            "\\1"
+        ],
+        [
+            "(m)ovies$",
+            "\\1\\2ovie"
+        ],
+        [
+            "(s)eries$",
+            "\\1\\2eries"
+        ],
+        [
+            "([^aeiouy]|qu)ies$",
+            "\\1y"
+        ],
+        [
+            "([lr])ves$",
+            "\\1f"
+        ],
+        [
+            "(tive)s$",
+            "\\1"
+        ],
+        [
+            "(hive)s$",
+            "\\1"
+        ],
+        [
+            "(drive)s$",
+            "\\1"
+        ],
+        [
+            "(dive)s$",
+            "\\1"
+        ],
+        [
+            "(olive)s$",
+            "\\1"
+        ],
+        [
+            "([^fo])ves$",
+            "\\1fe"
+        ],
+        [
+            "(^analy)ses$",
+            "\\1sis"
+        ],
+        [
+            "(analy|diagno|^ba|(p)arenthe|(p)rogno|(s)ynop|(t)he)ses$",
+            "\\1\\2sis"
+        ],
+        [
+            "(tax)a$",
+            "\\1on"
+        ],
+        [
+            "(c)riteria$",
+            "\\1riterion"
+        ],
+        [
+            "([ti])a(?<!regatta)$",
+            "\\1um"
+        ],
+        [
+            "(p)eople$",
+            "\\1\\2erson"
+        ],
+        [
+            "(m)en$",
+            "\\1an"
+        ],
+        [
+            "(c)hildren$",
+            "\\1\\2hild"
+        ],
+        [
+            "(f)eet$",
+            "\\1oot"
+        ],
+        [
+            "(n)ews$",
+            "\\1\\2ews"
+        ],
+        [
+            "eaus$",
+            "eau"
+        ],
+        [
+            "^tights$",
+            "tights"
+        ],
+        [
+            "^shorts$",
+            "shorts"
+        ],
+        [
+            "s$",
+            ""
+        ]
+    ]
+}

@@ -1,0 +1,22 @@
+#!/usr/bin/env php
+<?php
+
+declare(strict_types=1);
+
+use MrNewport\MrLaravel\Console\DiffCommand;
+use MrNewport\MrLaravel\Console\ScanCommand;
+use MrNewport\MrLaravel\Scanner;
+use Symfony\Component\Console\Application;
+
+$autoload = $GLOBALS['_composer_autoload_path'] ?? __DIR__.'/../vendor/autoload.php';
+if (! is_file($autoload)) {
+    fwrite(STDERR, "MrLaravel: install the package with Composer before running this command.\n");
+    exit(1);
+}
+require $autoload;
+
+$application = new Application('MrLaravel', '1.0.0');
+$scanner = new Scanner;
+$application->add(new ScanCommand($scanner));
+$application->add(new DiffCommand($scanner));
+$application->run();

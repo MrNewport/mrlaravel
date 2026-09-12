@@ -1,0 +1,50 @@
+name: Tests
+on:
+  push:
+  pull_request:
+permissions:
+  contents: read
+jobs:
+  standalone:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        php: ['8.3', '8.4']
+        node: ['22', '24']
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: shivammathur/setup-php@f3e473d116dcccaddc5834248c87452386958240 # 2.37.2
+        with:
+          php-version: ${{ matrix.php }}
+          tools: composer:v2
+          coverage: none
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: ${{ matrix.node }}
+      - run: composer validate --strict
+      - run: composer install --no-interaction --prefer-dist
+      - run: node --test tests/scanner.test.js
+      - run: php tests/smoke.php
+  laravel:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          path: package
+      - uses: shivammathur/setup-php@f3e473d116dcccaddc5834248c87452386958240 # 2.37.2
+        with:
+          php-version: '8.3'
+          tools: composer:v2
+          coverage: none
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: '22'
+      - run: composer create-project laravel/laravel:^13.0 host --no-interaction --no-scripts
+      - working-directory: host
+        run: |
+          cp .env.example .env
+          composer config repositories.mrlaravel '{"type":"path","url":"../package","options":{"versions":{"mrnewport/mrlaravel":"1.0.0"}}}'
+          composer require --dev mrnewport/mrlaravel:^1.0 --no-interaction
+          php artisan mrlaravel:scan --out ../reports/host
+          php artisan mrlaravel:scan ../package/tests/fixtures/atlas --out ../reports/fixture
+          vendor/bin/mrlaravel diff ../reports/fixture/atlas.json ../reports/fixture/atlas.json

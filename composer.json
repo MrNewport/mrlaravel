@@ -1,0 +1,57 @@
+{
+    "$schema": "https://getcomposer.org/schema.json",
+    "name": "mrnewport/mrlaravel",
+    "description": "A local Laravel declaration atlas with source links, offline reports and snapshot comparisons",
+    "type": "library",
+    "license": "proprietary",
+    "keywords": [
+        "laravel",
+        "static-analysis",
+        "routes",
+        "eloquent",
+        "documentation"
+    ],
+    "homepage": "https://github.com/MrNewport/mrlaravel",
+    "support": {
+        "issues": "https://github.com/MrNewport/mrlaravel/issues",
+        "source": "https://github.com/MrNewport/mrlaravel"
+    },
+    "require": {
+        "php": "^8.3",
+        "symfony/console": "^7.2 || ^8.0",
+        "symfony/process": "^7.2 || ^8.0",
+        "composer-runtime-api": "^2.2"
+    },
+    "suggest": {
+        "illuminate/support": "Enables automatic Artisan command registration in a Laravel application"
+    },
+    "autoload": {
+        "psr-4": {
+            "MrNewport\\MrLaravel\\": "src/"
+        }
+    },
+    "bin": [
+        "bin/mrlaravel"
+    ],
+    "extra": {
+        "laravel": {
+            "providers": [
+                "MrNewport\\MrLaravel\\MrLaravelServiceProvider"
+            ]
+        }
+    },
+    "archive": {
+        "exclude": [
+            "/tests",
+            "/.github",
+            "/.gitignore",
+            "/.gitattributes",
+            "/composer.lock",
+            "/RELEASING.md"
+        ]
+    },
+    "require-dev": {
+        "illuminate/routing": "^13.0",
+        "illuminate/events": "^13.0"
+    }
+}
