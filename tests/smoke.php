@@ -24,7 +24,8 @@ mkdir($target.'/app', 0700, true);
 try {
     $sentinel = $root.'/executed';
     file_put_contents($target.'/routes/web.php', "<?php\nfile_put_contents(".var_export($sentinel, true).", 'executed');\nRoute::get('/hello', fn () => 'PRIVATE_BODY');\n");
-    $check($run(['--version'])->isSuccessful(), 'Composer binary must boot.');
+    $version = $run(['--version']);
+    $check($version->isSuccessful(), 'Composer binary must boot. '.$version->getErrorOutput());
     $first = $run(['scan', $target, '--out', $root.'/first', '--name', 'A <literal> app']);
     $check($first->isSuccessful(), $first->getErrorOutput());
     $atlas = json_decode(file_get_contents($root.'/first/atlas.json'), true, flags: JSON_THROW_ON_ERROR);

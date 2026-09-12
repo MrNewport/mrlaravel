@@ -17,6 +17,5 @@ require $autoload;
 
 $application = new Application('MrLaravel', '1.0.0');
 $scanner = new Scanner;
-$application->add(new ScanCommand($scanner));
-$application->add(new DiffCommand($scanner));
+$application->addCommands([new ScanCommand($scanner), new DiffCommand($scanner)]);
 $application->run();
