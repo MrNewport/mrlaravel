@@ -1,5 +1,7 @@
 # MrLaravel
 
+Explore the [interactive workshop](https://matthewnewport.com/packages/mrlaravel/lab) with editable examples, package output and integration code.
+
 Read the [complete handbook](docs/HANDBOOK.md) for installation, contracts, configuration, failures and application recipes. The [feature inventory](docs/FEATURES.md) maps implemented behavior to its boundaries.
 
 A local source atlas for Laravel: map declared routes, controller actions, models, relationships and middleware; follow source links; compare snapshots; and explore a self-contained HTML report.
