@@ -1,5 +1,7 @@
 # MrLaravel
 
+Read the [complete handbook](docs/HANDBOOK.md) for installation, contracts, configuration, failures and application recipes. The [feature inventory](docs/FEATURES.md) maps implemented behavior to its boundaries.
+
 A local source atlas for Laravel: map declared routes, controller actions, models, relationships and middleware; follow source links; compare snapshots; and explore a self-contained HTML report.
 
 Package: `mrnewport/mrlaravel`. PHP 8.3+, Composer 2.2+, and Node.js 22+ are required. The pinned PHP parser ships with the package. **No npm install is needed to use it.** The standalone command does not require Laravel; Artisan integration is tested with Laravel 13.
