@@ -2,6 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs/promises';
 import vm from 'node:vm';
+import {boundaries as scannerBoundaries} from '../engine/src/scanner.js';
 const script=await fs.readFile(new URL('../engine/src/source-viewer.js',import.meta.url),'utf8');
 const create=vm.runInNewContext(script+'\ncreateIncludedSourceViewer;');
 class Node {
@@ -33,7 +34,7 @@ test('explicit empty maps and literal prototype-looking keys are safe',()=>{cons
 async function reportFixture(bundle=null){
   const d=document();
   for(const id of ['app-name','navigation','metrics','search','status-filter','method-filter','crumb','section-heading','result-count','results','detail','boundaries-button','close-boundaries','boundaries','boundary-content','notice-review','file-count','download','source-folder-button','source-folder-input','source-folder-error','source-folder-dialog','close-source-folder','save-source-folder','clear-source-folder'])d.nodes.set(id,new Node(d));
-  const atlas={application:'Download fixture',files:[{file:'app/A.php',lines:1,status:'parsed'}],routes:[],controllers:[],models:[],relationships:[],middleware:[],diagnostics:[],edges:[],boundaries:[]};
+  const atlas={application:'Download fixture',files:[{file:'app/A.php',lines:1,status:'parsed'}],routes:[],controllers:[],models:[],relationships:[],middleware:[],diagnostics:[],edges:[],boundaries:[...scannerBoundaries]};
   const state={callbacks:[],revoked:[],storage:new Map()};
   const context=vm.createContext({document:d,ATLAS:atlas,SOURCE_BASE:null,SOURCE_BUNDLE:bundle,Blob,sessionStorage:{getItem:key=>state.storage.get(key)??null,setItem:(key,value)=>state.storage.set(key,value),removeItem:key=>state.storage.delete(key)},URL:{createObjectURL:value=>{state.blob=value;return'blob:fixture';},revokeObjectURL:value=>state.revoked.push(value)},setTimeout:callback=>state.callbacks.push(callback)});
   const client=await fs.readFile(new URL('../engine/src/report-client.js',import.meta.url),'utf8');
@@ -67,4 +68,18 @@ test('unmapped declaration links use the same folder focus and reset stale valid
   assert.equal(d.activeElement,input);assert.equal(input.value,'');assert.equal(input.getAttribute('aria-invalid'),null);assert.equal(d.getElementById('source-folder-error').textContent,'');
   d.getElementById('source-folder-dialog').close();assert.equal(d.activeElement,link);
   link.focus();link.onclick({preventDefault(){}});link.isConnected=false;d.getElementById('source-folder-dialog').close();assert.equal(d.activeElement,button,'A replaced finding restores the persistent toolbar button.');
+});
+
+test('bundled report boundaries distinguish scanner JSON privacy from included HTML source',async()=>{
+  const plain=await reportFixture(),bundled=await reportFixture({'app/A.php':'PRIVATE_SOURCE_BODY'});
+  assert.deepEqual(plain.d.getElementById('boundary-content').children.map(n=>n.textContent),scannerBoundaries,'Default report boundary wording remains unchanged.');
+  const paragraphs=bundled.d.getElementById('boundary-content').children.map(n=>n.textContent);
+  assert.match(paragraphs[0],/scanner boundaries below describe the atlas JSON export/);
+  assert.match(paragraphs[0],/This HTML also contains 1 source file explicitly supplied/);
+  assert.match(paragraphs[0],/Anyone who receives the HTML can read those included source bodies; share it only with permission/);
+  const privacy=scannerBoundaries.find(text=>text.startsWith('Source bodies,'));assert.ok(privacy);
+  assert.ok(paragraphs.includes('Scanner JSON only: '+privacy));
+  assert.deepEqual(bundled.atlas.boundaries,scannerBoundaries,'Presentation context must not mutate the snapshot or exported boundary values.');
+  bundled.d.getElementById('download').onclick();assert.deepEqual(JSON.parse(await bundled.state.blob.text()).boundaries,scannerBoundaries);
+  const empty=await reportFixture({});assert.match(empty.d.getElementById('boundary-content').children[0].textContent,/This HTML also contains 0 source files/);
 });
