@@ -115,7 +115,7 @@ const openBoundaries=()=>{$('boundaries').showModal();};$('boundaries-button').o
 for(const boundary of ATLAS.boundaries)$('boundary-content').append(el('p','',boundary));
 $('notice-review').onclick=()=>{section='diagnostics';selected=ATLAS.diagnostics[0]?.id;query='';filter='all';$('search').value='';$('status-filter').value='all';render();};
 $('file-count').textContent=ATLAS.files.length+' PHP files inspected';
-$('download').onclick=()=>{const url=URL.createObjectURL(new Blob([JSON.stringify(ATLAS,null,2)+'\n'],{type:'application/json'}));const a=el('a');a.href=url;a.download='atlas.json';a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);};
+$('download').onclick=()=>{const url=URL.createObjectURL(new Blob([JSON.stringify(ATLAS,null,2)+'\n'],{type:'application/json'}));const a=el('a');a.href=url;a.download='atlas.json';document.body.append(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1000);};
 document.addEventListener('keydown',e=>{if(e.key==='/'&&!document.querySelector('dialog[open]')&&!['INPUT','TEXTAREA','SELECT'].includes(document.activeElement.tagName)&&!document.activeElement.isContentEditable){e.preventDefault();$('search').focus();}});
 render();
 
