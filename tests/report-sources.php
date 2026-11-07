@@ -44,6 +44,7 @@ $check($decodeBundle($html) === ['app/Models/Example.php' => $source], 'Source t
 $check(str_contains($html, 'intentionally includes supplied source text'), 'Bundled reports must disclose intentional source inclusion.');
 $check(str_contains($html, 'aria-labelledby="included-source-heading"') && str_contains($html, 'aria-label="Included source code"'), 'The source dialog and code region must be named.');
 $check(str_contains($html, 'aria-labelledby="boundaries-heading"') && str_contains($html, 'aria-labelledby="source-folder-heading"'), 'Existing dialogs must have accessible names.');
+$check(str_contains($html, 'id="source-folder-input" aria-describedby="source-folder-error"'), 'Local folder validation errors must describe their input.');
 $check(str_contains($html, 'role="region" aria-label="Findings"') && str_contains($html, 'href="#main-content"'), 'Findings and the main landmark must be keyboard reachable and named.');
 $check(str_contains($html, 'literal=make(\'code\',text)') && ! str_contains(file_get_contents(dirname(__DIR__).'/engine/src/source-viewer.js'), 'innerHTML'), 'Source display must use text content, never HTML parsing.');
 

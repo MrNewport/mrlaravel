@@ -30,15 +30,41 @@ test('file browsing, line navigation and copy use only explicitly supplied text'
 test('missing files/lines and denied clipboard have explicit accessible outcomes',async()=>{const d=document(),v=create(d,{'app/A.php':'one\ntwo'});v.open('app/A.php',99,1);assert.match(d.getElementById('included-source-error').textContent,/Requested line 99/);assert.equal(d.getElementById('included-source-location').textContent,'app/A.php:1:1');v.open('../private.php',1,1);assert.match(d.getElementById('included-source-error').textContent,/was not included/);d.defaultView.navigator.clipboard.writeText=async()=>{throw new Error('Unavailable');};await d.getElementById('included-source-copy').dispatch('click');assert.match(d.getElementById('included-source-feedback').textContent,/Copy is unavailable/);assert.equal(d.activeElement,d.getElementById('included-source-code'));});
 test('explicit empty maps and literal prototype-looking keys are safe',()=>{const empty=document();create(empty,{}).open();assert.equal(empty.getElementById('included-source-copy').disabled,true);assert.match(empty.getElementById('included-source-location').textContent,/No source files/);const d=document(),v=create(d,JSON.parse('{"__proto__":"literal"}'));assert.equal(v.has('__proto__'),true);v.open('__proto__',1);assert.equal(d.getElementById('included-source-code').children[0].children[1].textContent,'literal');assert.equal({}.polluted,undefined);});
 
-test('JSON export activates a connected anchor and exports metadata without bundled source',async()=>{
+async function reportFixture(bundle=null){
   const d=document();
   for(const id of ['app-name','navigation','metrics','search','status-filter','method-filter','crumb','section-heading','result-count','results','detail','boundaries-button','close-boundaries','boundaries','boundary-content','notice-review','file-count','download','source-folder-button','source-folder-input','source-folder-error','source-folder-dialog','close-source-folder','save-source-folder','clear-source-folder'])d.nodes.set(id,new Node(d));
   const atlas={application:'Download fixture',files:[{file:'app/A.php',lines:1,status:'parsed'}],routes:[],controllers:[],models:[],relationships:[],middleware:[],diagnostics:[],edges:[],boundaries:[]};
-  let blob;const callbacks=[],revoked=[];
-  const context={document:d,ATLAS:atlas,SOURCE_BASE:null,SOURCE_BUNDLE:{'app/A.php':'PRIVATE_SOURCE_BODY'},Blob,URL:{createObjectURL:value=>{blob=value;return'blob:fixture';},revokeObjectURL:value=>revoked.push(value)},setTimeout:callback=>callbacks.push(callback)};
+  const state={callbacks:[],revoked:[],storage:new Map()};
+  const context=vm.createContext({document:d,ATLAS:atlas,SOURCE_BASE:null,SOURCE_BUNDLE:bundle,Blob,sessionStorage:{getItem:key=>state.storage.get(key)??null,setItem:(key,value)=>state.storage.set(key,value),removeItem:key=>state.storage.delete(key)},URL:{createObjectURL:value=>{state.blob=value;return'blob:fixture';},revokeObjectURL:value=>state.revoked.push(value)},setTimeout:callback=>state.callbacks.push(callback)});
   const client=await fs.readFile(new URL('../engine/src/report-client.js',import.meta.url),'utf8');
-  vm.runInNewContext(script+'\n'+client,context);d.getElementById('download').onclick();
+  vm.runInContext(script+'\n'+client,context);return{d,atlas,context,state};
+}
+
+test('JSON export activates a connected anchor and exports metadata without bundled source',async()=>{
+  const{d,atlas,state}=await reportFixture({'app/A.php':'PRIVATE_SOURCE_BODY'});d.getElementById('download').onclick();
   assert.equal(d.anchorConnectedAtClick,true);assert.equal(d.downloadName,'atlas.json');assert.equal(d.body.children.length,0);
-  const text=await blob.text();assert.deepEqual(JSON.parse(text),atlas);assert.ok(!text.includes('PRIVATE_SOURCE_BODY'));assert.equal(blob.type,'application/json');
-  assert.equal(revoked.length,0);callbacks.forEach(callback=>callback());assert.deepEqual(revoked,['blob:fixture']);
+  const text=await state.blob.text();assert.deepEqual(JSON.parse(text),atlas);assert.ok(!text.includes('PRIVATE_SOURCE_BODY'));assert.equal(state.blob.type,'application/json');
+  assert.equal(state.revoked.length,0);state.callbacks.forEach(callback=>callback());assert.deepEqual(state.revoked,['blob:fixture']);
+});
+
+test('local-folder errors focus the described field and closing restores keyboard focus',async()=>{
+  const{d,state}=await reportFixture(),button=d.getElementById('source-folder-button'),input=d.getElementById('source-folder-input'),dialog=d.getElementById('source-folder-dialog');
+  button.focus();button.onclick();assert.equal(dialog.open,true);assert.equal(d.activeElement,input);
+  for(const path of ['relative/folder','/safe/../private','https://example.test/source']){
+    input.value=path;d.getElementById('save-source-folder').focus();d.getElementById('save-source-folder').onclick();
+    assert.equal(dialog.open,true);assert.equal(d.activeElement,input);assert.equal(input.getAttribute('aria-invalid'),'true');assert.match(d.getElementById('source-folder-error').textContent,/absolute folder path/);assert.equal(state.storage.size,0);
+  }
+  input.value='/Users/example/application';input.oninput();assert.equal(input.getAttribute('aria-invalid'),null);assert.equal(d.getElementById('source-folder-error').textContent,'');
+  d.getElementById('save-source-folder').onclick();assert.equal(dialog.open,false);assert.equal(d.activeElement,button);assert.deepEqual([...state.storage.values()],['/Users/example/application']);
+  button.onclick();assert.equal(input.value,'/Users/example/application');dialog.close();assert.equal(d.activeElement,button,'Native Escape close uses the same close event and restores its opener.');
+  button.onclick();d.getElementById('clear-source-folder').onclick();assert.equal(state.storage.size,0);assert.equal(dialog.open,false);assert.equal(d.activeElement,button);
+});
+
+test('unmapped declaration links use the same folder focus and reset stale validation',async()=>{
+  const{d,context}=await reportFixture(),button=d.getElementById('source-folder-button'),input=d.getElementById('source-folder-input');
+  button.focus();button.onclick();input.value='../invalid';d.getElementById('save-source-folder').onclick();d.getElementById('close-source-folder').onclick();
+  const link=vm.runInContext("sourceLink({file:'app/A.php',line:3}).children[0]",context);link.focus();link.onclick({preventDefault(){}});
+  assert.equal(d.activeElement,input);assert.equal(input.value,'');assert.equal(input.getAttribute('aria-invalid'),null);assert.equal(d.getElementById('source-folder-error').textContent,'');
+  d.getElementById('source-folder-dialog').close();assert.equal(d.activeElement,link);
+  link.focus();link.onclick({preventDefault(){}});link.isConnected=false;d.getElementById('source-folder-dialog').close();assert.equal(d.activeElement,button,'A replaced finding restores the persistent toolbar button.');
 });

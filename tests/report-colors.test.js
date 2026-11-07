@@ -38,3 +38,10 @@ test('mobile text controls declare 16px sizing to avoid focus zoom',()=>{
   assert.match(css,/@media\(max-width:760px\)\{input,select,textarea\{font-size:16px\}/);
   for(const selector of ['.search input','.toolbar select','#source-folder-dialog input','#included-source-form input','#included-source-form select'])assert.equal(value(selector,'font-size'),'16px');
 });
+
+test('mobile navigation keeps the only full analysis-boundaries trigger visible',async()=>{
+  const html=await fs.readFile(new URL('../engine/src/report.html',import.meta.url),'utf8');
+  assert.match(html,/<div class="rail-bottom"><div class="rail-metadata">[\s\S]*?<\/div><button id="boundaries-button"/);
+  assert.match(css,/@media\(max-width:760px\)\{[^}]*\}\.brand\{[^}]*\}\.brand small,\.rail-label,\.app-name,\.rail-bottom \.rail-metadata\{display:none\}/);
+  for(const selector of ['.rail','.rail-bottom','.rail-bottom button','#boundaries-button'])assert.notEqual(rules.get(selector)?.display,'none',selector+' must remain visible on mobile.');
+});

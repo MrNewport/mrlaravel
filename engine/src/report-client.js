@@ -11,10 +11,12 @@ const short=s=>s?.split('\\').at(-1)??'Unresolved';
 const title=r=>r.kind==='route'?r.fallback?'Fallback route':r.uri??'Unresolved URI':r.kind==='relationship'?`${short(r.model)}.${r.name}()` :r.kind==='method'?`${short(r.class)}::${r.name}()` :r.collection==='diagnostics'?r.code:short(r.name);
 const partial=r=>r.status==='partial'||r.collection==='diagnostics';
 const storageKey='mrlaravel-source:'+(typeof MAPPING_KEY==='string'?MAPPING_KEY:'offline');
-let mappedFolder='';
+let mappedFolder='',sourceFolderOpener=null;
 try{mappedFolder=sessionStorage.getItem(storageKey)??'';}catch{}
 function validFolder(value){return value.length<=1000 && (/^\//.test(value)||/^[A-Za-z]:\//.test(value)) && !/[\u0000-\u001f<>?#]/.test(value) && !value.split('/').some(s=>s==='.'||s==='..') && !value.startsWith('//');}
 if(!validFolder(mappedFolder))mappedFolder='';
+function clearFolderError(){$('source-folder-error').textContent='';$('source-folder-input').removeAttribute('aria-invalid');}
+function openSourceFolder(){sourceFolderOpener=document.activeElement;$('source-folder-input').value=mappedFolder;clearFolderError();$('source-folder-dialog').showModal();$('source-folder-input').focus();}
 function sourceLink(src){
   const div=el('div','source-link');if(!src)return div;
   if(includedSourceViewer.available&&(includedSourceViewer.has(src.file)||!mappedFolder)){
@@ -30,7 +32,7 @@ function sourceLink(src){
     a.href=`vscode://file/${url.pathname.replace(/^\//,'')}:${src.line}:${src.column??1}`;a.title='Open exact source line in VS Code';
     const fallback=el('a','file-link','file ↗');fallback.href=url.href;fallback.target='_blank';fallback.rel='noopener noreferrer';div.append(a,fallback);
   }else{
-    a.href='#';a.title='Choose your local source folder to open this line';a.onclick=e=>{e.preventDefault();$('source-folder-dialog').showModal();};div.append(a,el('span','file-link','local source'));
+    a.href='#';a.title='Choose your local source folder to open this line';a.onclick=e=>{e.preventDefault();openSourceFolder();};div.append(a,el('span','file-link','local source'));
   }
   return div;
 }
@@ -119,7 +121,9 @@ $('download').onclick=()=>{const url=URL.createObjectURL(new Blob([JSON.stringif
 document.addEventListener('keydown',e=>{if(e.key==='/'&&!document.querySelector('dialog[open]')&&!['INPUT','TEXTAREA','SELECT'].includes(document.activeElement.tagName)&&!document.activeElement.isContentEditable){e.preventDefault();$('search').focus();}});
 render();
 
-$('source-folder-button').onclick=()=>{$('source-folder-input').value=mappedFolder;$('source-folder-error').textContent='';$('source-folder-dialog').showModal();};
+$('source-folder-button').onclick=openSourceFolder;
+$('source-folder-input').oninput=clearFolderError;
+$('source-folder-dialog').addEventListener('close',()=>{const opener=sourceFolderOpener?.isConnected?sourceFolderOpener:$('source-folder-button');opener.focus();});
 $('close-source-folder').onclick=()=>$('source-folder-dialog').close();
-$('save-source-folder').onclick=()=>{const value=$('source-folder-input').value.trim().replace(/\\/g,'/').replace(/\/+$/,'');if(!validFolder(value)){$('source-folder-error').textContent='Enter an absolute folder path without URLs, traversal, or query characters.';return;}mappedFolder=value;try{sessionStorage.setItem(storageKey,value);}catch{}$('source-folder-dialog').close();detail();};
-$('clear-source-folder').onclick=()=>{mappedFolder='';try{sessionStorage.removeItem(storageKey);}catch{}$('source-folder-dialog').close();detail();};
+$('save-source-folder').onclick=()=>{const input=$('source-folder-input'),value=input.value.trim().replace(/\\/g,'/').replace(/\/+$/,'');if(!validFolder(value)){$('source-folder-error').textContent='Enter an absolute folder path without URLs, traversal, or query characters.';input.setAttribute('aria-invalid','true');input.focus();return;}clearFolderError();mappedFolder=value;try{sessionStorage.setItem(storageKey,value);}catch{}detail();$('source-folder-dialog').close();};
+$('clear-source-folder').onclick=()=>{mappedFolder='';try{sessionStorage.removeItem(storageKey);}catch{}detail();$('source-folder-dialog').close();};
