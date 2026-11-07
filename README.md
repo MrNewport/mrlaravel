@@ -14,7 +14,7 @@ Until the package is listed on Packagist, install the tagged GitHub release from
 
 ```sh
 composer config repositories.mrlaravel vcs https://github.com/MrNewport/mrlaravel
-composer require --dev mrnewport/mrlaravel:^1.0
+composer require --dev mrnewport/mrlaravel:^1.1
 ```
 
 After Packagist submission, only the `composer require` command is needed. Composer 2.2+ creates a `vendor/bin/mrlaravel` proxy and Laravel discovers the service provider. No migrations, published config, routes or account credentials are required.
@@ -23,10 +23,10 @@ For a downloaded package ZIP, extract it outside your application, then add that
 
 ```sh
 composer config repositories.mrlaravel path "/absolute/path/to/mrlaravel"
-composer require --dev mrnewport/mrlaravel:^1.0
+composer require --dev mrnewport/mrlaravel:^1.1
 ```
 
-The website ZIP includes release-version metadata for this local installation. A Git clone instead gets its version from the `v1.0.0` tag. Keep the extracted folder if Composer symlinks it, or use a mirrored path repository (`options.symlink: false`).
+The website ZIP includes release-version metadata for this local installation. A Git clone instead gets its version from the matching release tag. Keep the extracted folder if Composer symlinks it, or use a mirrored path repository (`options.symlink: false`).
 
 ## Scan your app
 
@@ -78,12 +78,19 @@ $html = (new \MrNewport\MrLaravel\ReportRenderer)->render($validatedAtlas);
 
 Pass a validated version-1 snapshot. The renderer embeds JSON safely, produces a self-contained HTML report, and includes no server source root. This is the same renderer used by the MrLaravel website. Snapshot validation, accounts and storage belong to the host application.
 
+### Optional included source (1.1)
+
+`render($validatedAtlas, $mappingKey, ['sources' => $approvedSourceTexts])` accepts an explicit map of relative filenames to trusted UTF-8 source text. It adds file browsing and exact declaration-line viewing in a keyboard-accessible dialog. The renderer never reads those filenames from disk; keys must occur in `atlas.files` and the bundle is bounded to 100 files, 256 KiB/file and 2 MiB total.
+
+Source is displayed as text and never executed. **Anyone receiving the HTML can read the supplied source.** Existing calls include no source bodies and retain local folder mapping. See the [complete source-bundle contract](docs/HANDBOOK.md#explicit-included-source-reports-11) for limits, errors, privacy and host provenance requirements.
+
 ## Development and checks
 
 ```sh
 composer install
-node --test tests/scanner.test.js
+node --test tests/*.test.js
 php tests/smoke.php
+php tests/report-sources.php
 ```
 
 Node tests exercise source locations, graph integrity, privacy, parse failures, filesystem boundaries and comparisons. The PHP smoke test installs/runs the real commands against synthetic source, including failure cases and HTML rendering. GitHub Actions also checks Laravel package discovery. See [RELEASING.md](RELEASING.md) for parser updates, tags and Packagist submission.

@@ -37,7 +37,7 @@ export async function scan(target,{label='Application',maxFileBytes=2*1024*1024}
   const stat=await fs.stat(root); if(!stat.isDirectory()) throw new Error('Target must be a directory.');
   const files=await sourceFiles(root);
   if(!files.length) throw new Error('No eligible PHP files found beneath app/ or routes/.');
-  const result={schemaVersion:1,tool:{name:'MrLaravel',version:'1.0.0',parser:'php-parser 3.7.0'},application:label,mode:'static-declarations',boundaries,files:[],routes:[],controllers:[],models:[],middleware:[],relationships:[],edges:[],diagnostics:[]};
+  const result={schemaVersion:1,tool:{name:'MrLaravel',version:'1.1.0',parser:'php-parser 3.7.0'},application:label,mode:'static-declarations',boundaries,files:[],routes:[],controllers:[],models:[],middleware:[],relationships:[],edges:[],diagnostics:[]};
   const classes=new Map(), traits=new Map(), parsed=[];
   const diagnose=(code,message,src,severity='warning')=>{
     if(!result.diagnostics.some(x=>x.code===code&&x.source.file===src.file&&x.source.line===src.line&&x.source.column===src.column)) result.diagnostics.push({id:`diagnostic:${code}:${src.file}:${src.line}:${src.column}`,code,severity,message,source:src});

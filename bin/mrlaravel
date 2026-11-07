@@ -15,7 +15,7 @@ if (! is_file($autoload)) {
 }
 require $autoload;
 
-$application = new Application('MrLaravel', '1.0.0');
+$application = new Application('MrLaravel', '1.1.0');
 $scanner = new Scanner;
 $application->addCommands([new ScanCommand($scanner), new DiffCommand($scanner)]);
 $application->run();

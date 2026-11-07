@@ -24,8 +24,9 @@ jobs:
           node-version: ${{ matrix.node }}
       - run: composer validate --strict
       - run: composer install --no-interaction --prefer-dist
-      - run: node --test tests/scanner.test.js
+      - run: node --test tests/*.test.js
       - run: php tests/smoke.php
+      - run: php tests/report-sources.php
   laravel:
     runs-on: ubuntu-latest
     steps:
@@ -44,8 +45,8 @@ jobs:
       - working-directory: host
         run: |
           cp .env.example .env
-          composer config repositories.mrlaravel '{"type":"path","url":"../package","options":{"versions":{"mrnewport/mrlaravel":"1.0.0"}}}'
-          composer require --dev mrnewport/mrlaravel:^1.0 --no-interaction
+          composer config repositories.mrlaravel '{"type":"path","url":"../package","options":{"versions":{"mrnewport/mrlaravel":"1.1.0"}}}'
+          composer require --dev mrnewport/mrlaravel:^1.1 --no-interaction
           php artisan mrlaravel:scan --out ../reports/host
           php artisan mrlaravel:scan ../package/tests/fixtures/atlas --out ../reports/fixture
           vendor/bin/mrlaravel diff ../reports/fixture/atlas.json ../reports/fixture/atlas.json

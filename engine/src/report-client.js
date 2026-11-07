@@ -6,6 +6,7 @@ for(const key of Object.keys(labels)) for(const record of ATLAS[key]) all.set(re
 for(const c of [...ATLAS.controllers,...ATLAS.models]) for(const m of c.methods) all.set(m.id,{...m,kind:'method',class:c.name,collection:c.kind==='model'?'models':'controllers'});
 let section='routes',selected=ATLAS.routes[0]?.id??ATLAS.models[0]?.id,query='',filter='all',method='all';
 const el=(tag,cls,text)=>{const n=document.createElement(tag);if(cls)n.className=cls;if(text!==undefined)n.textContent=text;return n;};
+const includedSourceViewer=createIncludedSourceViewer(document,typeof SOURCE_BUNDLE==='undefined'?null:SOURCE_BUNDLE);
 const short=s=>s?.split('\\').at(-1)??'Unresolved';
 const title=r=>r.kind==='route'?r.fallback?'Fallback route':r.uri??'Unresolved URI':r.kind==='relationship'?`${short(r.model)}.${r.name}()` :r.kind==='method'?`${short(r.class)}::${r.name}()` :r.collection==='diagnostics'?r.code:short(r.name);
 const partial=r=>r.status==='partial'||r.collection==='diagnostics';
@@ -16,6 +17,11 @@ function validFolder(value){return value.length<=1000 && (/^\//.test(value)||/^[
 if(!validFolder(mappedFolder))mappedFolder='';
 function sourceLink(src){
   const div=el('div','source-link');if(!src)return div;
+  if(includedSourceViewer.available&&(includedSourceViewer.has(src.file)||!mappedFolder)){
+    const button=el('button','source-button',`${src.file}:${src.line}${includedSourceViewer.has(src.file)?'':' · source not included'}`);button.type='button';
+    button.title=includedSourceViewer.has(src.file)?'Read the included source at this line':'Browse the explicitly included files';
+    button.onclick=()=>includedSourceViewer.open(src.file,src.line,src.column??1);div.append(button);return div;
+  }
   const a=el('a','',`${src.file}:${src.line}`);
   let url=null;
   if(mappedFolder){url=new URL('file:///'+[mappedFolder.replace(/^\//,''),src.file].join('/').split('/').map(encodeURIComponent).join('/'));}
@@ -35,7 +41,7 @@ function addConnection(parent,id,label){const c=connection(id,label);if(c)parent
 function detail(){
   const pane=$('detail');pane.replaceChildren();const r=all.get(selected);
   if(!r){pane.append(el('div','empty','Select a finding to trace its connections and inspect the source.'));return;}
-  pane.append(el('span','eyebrow',r.kind==='method'?'CONTROLLER ACTION':labels[r.collection].toUpperCase()),el('h3','',title(r)));
+  pane.append(el('span','eyebrow',r.kind==='method'?(r.collection==='models'?'MODEL METHOD':'CONTROLLER ACTION'):labels[r.collection].toUpperCase()),el('h3','',title(r)));
   const subtitle=r.kind==='route'?`${r.methods?.join(' · ')??'HTTP methods unresolved'}${r.name?'  /  '+r.name:''}`:r.kind==='relationship'?`${r.type} → ${r.target??'runtime target'}`:r.name;
   if(subtitle)pane.append(el('div','subtitle',subtitle));
   pane.append(el('span','status'+(partial(r)?' partial':''),partial(r)?'Needs review':'Statically declared'),sourceLink(r.source));
@@ -65,7 +71,7 @@ function detail(){
     }
   }
   if(r.kind==='method'){
-    addConnection(pane,`class:${r.class}`,'Declared on controller');
+    addConnection(pane,`class:${r.class}`,r.collection==='models'?'Declared on model':'Declared on controller');
     pane.append(heading('Model references'));
     for(const e of ATLAS.edges.filter(e=>e.from===r.id)){addConnection(pane,e.to,e.evidence??e.type);pane.append(sourceLink(e.source));}
   }
@@ -110,7 +116,7 @@ for(const boundary of ATLAS.boundaries)$('boundary-content').append(el('p','',bo
 $('notice-review').onclick=()=>{section='diagnostics';selected=ATLAS.diagnostics[0]?.id;query='';filter='all';$('search').value='';$('status-filter').value='all';render();};
 $('file-count').textContent=ATLAS.files.length+' PHP files inspected';
 $('download').onclick=()=>{const url=URL.createObjectURL(new Blob([JSON.stringify(ATLAS,null,2)+'\n'],{type:'application/json'}));const a=el('a');a.href=url;a.download='atlas.json';a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);};
-document.addEventListener('keydown',e=>{if(e.key==='/'&&!['INPUT','TEXTAREA'].includes(document.activeElement.tagName)){e.preventDefault();$('search').focus();}});
+document.addEventListener('keydown',e=>{if(e.key==='/'&&!document.querySelector('dialog[open]')&&!['INPUT','TEXTAREA','SELECT'].includes(document.activeElement.tagName)&&!document.activeElement.isContentEditable){e.preventDefault();$('search').focus();}});
 render();
 
 $('source-folder-button').onclick=()=>{$('source-folder-input').value=mappedFolder;$('source-folder-error').textContent='';$('source-folder-dialog').showModal();};

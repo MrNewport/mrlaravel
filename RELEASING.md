@@ -3,8 +3,8 @@
 This directory is the complete `mrnewport/mrlaravel` GitHub repository. Composer reads versions from Git tags; do not add a version field to the repository's composer.json.
 
 1. Update code and tests. Keep the CLI application version and snapshot tool version aligned for a release. Review bundled third-party licenses when updating dependencies.
-2. Run `composer validate --strict`, `composer install`, `node --test tests/scanner.test.js`, and `php tests/smoke.php`. Verify the Laravel integration job too.
-3. Commit the tested tree, tag it (for example `v1.0.0`), and push the commit and tag. GitHub's source ZIP is installable by Composer without npm or build scripts.
+2. Run `composer validate --strict`, `composer install`, `node --test tests/*.test.js`, and `php tests/smoke.php`, and `php tests/report-sources.php`. Verify the Laravel integration job too.
+3. Commit the tested tree, tag it (for example `v1.1.0`), and push the commit and tag. GitHub's source ZIP is installable by Composer without npm or build scripts.
 4. Submit `https://github.com/MrNewport/mrlaravel` at https://packagist.org/packages/submit while signed into the account that owns the `mrnewport` vendor. Packagist reads composer.json and release tags; you do not upload a ZIP to Packagist.
 5. Enable the Packagist GitHub integration/webhook so future tagged releases update automatically. Confirm the new version on Packagist before changing user instructions to a Packagist-only install.
 

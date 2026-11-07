@@ -20,6 +20,8 @@ MrLaravel retains its proprietary project license. This is an inventory of imple
 | Deterministic version-1 atlas | `atlas.json` | Generated IDs are not permanent domain IDs |
 | Self-contained offline report | Engine report renderer | No automatic upload |
 | Safe PHP report renderer | `ReportRenderer::render()` | Caller validates atlas; no Node required |
+| Explicit reviewed source bundle | `ReportRenderer::render(..., options: ['sources' => $texts])` | Opt-in source disclosure; exact atlas filenames, bounded text, no source reads |
+| Included file/declaration viewer | Native named dialog and `source-viewer.js` | Text-only display; line mismatch, focus and clipboard failure outcomes are explicit |
 | Structural snapshot comparison | `diff.js`, CLI `diff` | Ignores line movement; differences do not change successful exit code |
 | Protected output paths | Engine CLI | No output into scanned target or aliased diff inputs |
 | Explicit exit statuses | 0 completed,1 failure,2 partial parse failure | Diagnostics must still be reviewed |

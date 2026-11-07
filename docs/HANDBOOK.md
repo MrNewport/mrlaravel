@@ -144,7 +144,7 @@ use MrNewport\MrLaravel\ReportRenderer;
 $html = (new ReportRenderer)->render($validatedAtlas, mappingKey: 'review-2026-11');
 ```
 
-`render(array $atlas, string $mappingKey = 'offline'): string` uses the bundled report assets and safely embedded JSON. It deliberately sets the source base to null, so a server-rendered report does not expose a server filesystem root. The mapping key is presentation data, not an authorization capability.
+`render(array $atlas, string $mappingKey = 'offline', array $options = []): string` uses the bundled report assets and safely embedded JSON. It deliberately sets the source base to null, so a server-rendered report does not expose a server filesystem root. The mapping key is presentation data, not an authorization capability.
 
 The caller must validate snapshot version, structure, string sizes, collection sizes and ownership before rendering untrusted input. The renderer is not a scanner or validator. It performs no database/network operation and needs no Node executable.
 
@@ -178,8 +178,9 @@ The wrapper checks Node's major version, then invokes the fixed engine executabl
 
 ```sh
 composer install
-node --test tests/scanner.test.js
+node --test tests/*.test.js
 php tests/smoke.php
+php tests/report-sources.php
 ```
 
 The Node tests exercise source columns, graph integrity, privacy, parse failures, route/resource semantics, traits, bootstrap middleware, deterministic snapshots, comparison and filesystem boundaries. PHP smoke tests run real commands against synthetic source and verify PHP rendering. CI additionally verifies Laravel discovery. See [RELEASING.md](../RELEASING.md) for parser updates and release packaging.
@@ -187,3 +188,44 @@ The Node tests exercise source columns, graph integrity, privacy, parse failures
 The existing proprietary project license remains unchanged. Bundled `php-parser` 3.7.0 is BSD-3-Clause; Doctrine Inflector 2.1 English rule data is MIT. See their notices in `engine/third-party/php-parser/LICENSE` and `licenses/doctrine-inflector.txt`.
 
 See the [feature inventory](FEATURES.md), [scanner source](../engine/src/scanner.js) and [report renderer](../src/ReportRenderer.php).
+
+## Explicit included-source reports (1.1)
+
+The PHP renderer can optionally embed an approved source bundle. This is useful for fictional documentation fixtures or an authorized offline review where readers do not have a local checkout:
+
+```php
+use MrNewport\MrLaravel\ReportRenderer;
+
+// $validatedAtlas and these texts come from the same reviewed source revision.
+$sources = [
+    'app/Models/Proposal.php' => $approvedProposalSource,
+    'routes/web.php' => $approvedRouteSource,
+];
+$html = (new ReportRenderer)->render(
+    $validatedAtlas,
+    mappingKey: 'fictional-procurement',
+    options: ['sources' => $sources],
+);
+```
+
+The full signature is `render(array $atlas, string $mappingKey = 'offline', array $options = []): string`. Existing one- and two-argument calls retain metadata-only rendering and local folder mapping. `sources` is the only supported option. It is a map of canonical relative filenames to UTF-8 **text already supplied by the caller**. The renderer never opens those filenames, walks a source directory, scans the content, executes the PHP or fetches missing files. Its ordinary bundled HTML/CSS/JavaScript assets are still read from the installed package.
+
+Every provided filename must occur exactly in `atlas.files[*].file`. A subset is allowed; membership establishes a declared filename, not proof that its content matches the snapshot. The host must retain provenance and approve source/snapshot alignment. A requested line outside the supplied file produces an explicit mismatch message. The adapter does not invent missing source, run a fresh scan or infer another file from the server.
+
+| Admission bound | Limit / public constant |
+| --- | --- |
+| Files | 100, `ReportRenderer::MAX_SOURCE_FILES` |
+| Per-file UTF-8 bytes | 262,144, `MAX_SOURCE_FILE_BYTES` |
+| Total source-text bytes | 2,097,152, `MAX_SOURCE_BYTES` |
+| Lines per file | 10,000, `MAX_SOURCE_LINES`; trailing newline creates a final empty line |
+| Relative filename bytes | 512, `MAX_SOURCE_PATH_BYTES` |
+
+Absolute paths, drive/URL syntax, backslashes, NUL/control characters, empty/dot/parent path segments, percent-encoded segments and query/fragment characters are rejected. Values must be strings with valid UTF-8 and no NUL. Unknown options, undeclared filenames and budget overflow throw `InvalidArgumentException` before HTML is produced. No validation rule permits a supplied path to become a filesystem read. An explicit empty map is valid and shows an empty file browser. The adapter validates this bundle contract; validating the atlas's overall schema, resource budget, ownership and permitted disclosure remains the host's responsibility.
+
+A bundled report adds **Browse included source**, an explicit source-inclusion notice and a named native dialog. A declaration's source control opens the supplied file at its one-based line and shows its column reference. Readers can select another included file, go to a line and copy the supplied text. Code is inserted through `textContent`; HTML-looking text, PHP, template marker strings and literal object keys remain data. A missing file is reported as omitted. The existing local mapping remains available as an optional fallback for omitted files; included files keep using the embedded viewer.
+
+The dialog supports keyboard file selection, line entry, native Escape/close behavior, a focusable code region and focus restoration to its opener. Global search shortcuts do not move focus out of an open dialog. Analysis-boundary and folder dialogs are also named, and the report provides a main-landmark skip link. Browser clipboard permissions can refuse copying; the viewer then explains how to select the text manually instead of claiming a copy succeeded.
+
+**Sharing changes with this explicit option:** anyone who receives the HTML can read the included source bodies. They are not redacted by the scanner's metadata privacy filters. Pass only source that the host is authorized to disclose; the public workshop passes committed fictional fixtures. No code is included by default, and scanning/CLI report generation still does not automatically collect or embed source bodies. Export JSON continues to export atlas metadata, not the separate source bundle.
+
+The report remains self-contained with network connections disabled by its CSP. Included file browsing performs no additional network or filesystem operation. `tests/report-sources.php` exercises filename/type/budget boundaries, literal embedding, marker collisions and default API compatibility; `tests/source-viewer.test.js` checks source navigation, text-only rendering, focus, absent data and copy failures. These unit checks complement a host's actual browser, screen-reader and accessibility verification.

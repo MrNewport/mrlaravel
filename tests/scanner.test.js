@@ -5,6 +5,7 @@ import path from 'node:path';
 import os from 'node:os';
 import {fileURLToPath} from 'node:url';
 import { execFileSync } from 'node:child_process';
+import vm from 'node:vm';
 import { scan,sourceFiles } from '../engine/src/scanner.js';
 import { compare } from '../engine/src/diff.js';
 import { renderReport } from '../engine/src/report.js';
@@ -185,4 +186,11 @@ test('diff refuses canonical path aliases and hard links to its input snapshots'
     assert.throws(()=>execFileSync(process.execPath,[cli,'diff',before,after,'--out',out],{stdio:'pipe'}),e=>e.status===1);
     assert.equal(await fs.readFile(before,'utf8'),bytes);
   }
+});
+
+test('report template markers inside metadata remain literal and generated JavaScript parses',async()=>{
+  const snapshot=structuredClone(atlas);snapshot.application='/* ATLAS_CSS */ /* ATLAS_DATA */ /* ATLAS_CLIENT */ /* ATLAS_SOURCE_PRIVACY */';
+  const html=await renderReport(snapshot);const script=html.match(/<script>([\s\S]*?)<\/script>/)[1];
+  assert.doesNotThrow(()=>new vm.Script(script));assert.ok(html.includes(JSON.stringify(snapshot.application)));
+  assert.ok(html.includes('const SOURCE_BUNDLE=null;'));assert.ok(html.includes('aria-labelledby="included-source-heading"'));
 });
